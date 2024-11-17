@@ -50,22 +50,24 @@ class PomodoroViewModel(application: Application) : AndroidViewModel(application
 
     // Función para iniciar la sesión de concentración
     fun startFocusSession() {
-        countDownTimer?.cancel() // Cancela cualquier temporizador en ejecución
+        countDownTimer?.cancel()
         _currentPhase.value = Phase.FOCUS
-        timeRemainingInMillis = 25 * 60 * 1000L // Restablece el tiempo de enfoque a 25 minutos
+        timeRemainingInMillis = 25 * 60 * 1000L
         _timeLeft.value = "25:00"
-        _isSkipBreakButtonVisible.value = false // Ocultar el botón si estaba visible
+        _isSkipBreakButtonVisible.value = false
         showNotification("Inicio de Concentración", "La sesión de concentración ha comenzado.")
-        startTimer() // Inicia el temporizador con el tiempo de enfoque actualizado
+        showNotification("Recordatorio", "Es hora de comenzar una nueva sesión de concentración.", true)
+        startTimer()
     }
 
     // Función para iniciar la sesión de descanso
     private fun startBreakSession() {
         _currentPhase.value = Phase.BREAK
-        timeRemainingInMillis = 5 * 60 * 1000L // 5 minutos para descanso
+        timeRemainingInMillis = 5 * 60 * 1000L
         _timeLeft.value = "05:00"
-        _isSkipBreakButtonVisible.value = true // Mostrar el botón durante el descanso
+        _isSkipBreakButtonVisible.value = true
         showNotification("Inicio de Descanso", "La sesión de descanso ha comenzado.")
+        showNotification("Recordatorio", "Es hora de comenzar una nueva sesión de descanso.", true)
         startTimer()
     }
 
@@ -117,8 +119,7 @@ class PomodoroViewModel(application: Application) : AndroidViewModel(application
             context, 0, intent, PendingIntent.FLAG_IMMUTABLE
         )
 
-        val notificationColor =
-            if (_currentPhase.value == Phase.FOCUS) 0xFFFF0000.toInt() else 0xFF00FF00.toInt()
+        val notificationColor = if (_currentPhase.value == Phase.FOCUS) 0xFFFF0000.toInt() else 0xFF00FF00.toInt()
         val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
         val builder = NotificationCompat.Builder(context, MainActivity.CHANNEL_ID)
@@ -132,9 +133,7 @@ class PomodoroViewModel(application: Application) : AndroidViewModel(application
             .setSound(soundUri)
 
         if (isReminder) {
-            builder.setStyle(
-                NotificationCompat.BigTextStyle().bigText("¡Es hora de comenzar tu próxima sesión!")
-            )
+            builder.setStyle(NotificationCompat.BigTextStyle().bigText("¡Es hora de comenzar tu próxima sesión!"))
         }
 
         with(NotificationManagerCompat.from(context)) {

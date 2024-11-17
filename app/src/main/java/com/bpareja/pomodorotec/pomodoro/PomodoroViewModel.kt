@@ -109,27 +109,33 @@ class PomodoroViewModel(application: Application) : AndroidViewModel(application
     }
 
     // Muestra la notificación personalizada
-    private fun showNotification(title: String, message: String) {
+    private fun showNotification(title: String, message: String, isReminder: Boolean = false) {
         val intent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT // Reabrir la actividad si ya está en el stack
+            flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
         }
         val pendingIntent: PendingIntent = PendingIntent.getActivity(
             context, 0, intent, PendingIntent.FLAG_IMMUTABLE
         )
 
-        // Color para la notificación según la fase (rojo para concentración, verde para descanso)
-        val notificationColor = if (_currentPhase.value == Phase.FOCUS) 0xFFFF0000.toInt() else 0xFF00FF00.toInt()
-        val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION) // Sonido predeterminado
+        val notificationColor =
+            if (_currentPhase.value == Phase.FOCUS) 0xFFFF0000.toInt() else 0xFF00FF00.toInt()
+        val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
         val builder = NotificationCompat.Builder(context, MainActivity.CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground) // Ícono personalizado
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(title)
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setContentIntent(pendingIntent)  // Usar el PendingIntent configurado
+            .setContentIntent(pendingIntent)
             .setAutoCancel(true)
-            .setColor(notificationColor) // Color de la notificación
-            .setSound(soundUri) // Sonido para la notificación
+            .setColor(notificationColor)
+            .setSound(soundUri)
+
+        if (isReminder) {
+            builder.setStyle(
+                NotificationCompat.BigTextStyle().bigText("¡Es hora de comenzar tu próxima sesión!")
+            )
+        }
 
         with(NotificationManagerCompat.from(context)) {
             if (ActivityCompat.checkSelfPermission(
